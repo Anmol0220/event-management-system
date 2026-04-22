@@ -185,3 +185,4 @@ alembic upgrade head
 - Put the app behind HTTPS and set `SESSION_HTTPS_ONLY=true`
 - Disable docs in production with `SHOW_DOCS=false`
 - Use managed PostgreSQL or persistent Docker volumes for data durability
+# event-management-system
