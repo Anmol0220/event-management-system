@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Login | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-6">
+                <section class="hero-panel h-100">
+                    <span class="eyebrow">Operations hub</span>
+                    <h1 class="hero-title mt-3">Run every technical event from one control room.</h1>
+                    <p class="hero-copy mt-3">
+                        Coordinate vendors, approve products, manage memberships, and track deliveries without switching between disconnected systems.
+                    </p>
+                    <div class="hero-metrics mt-4">
+                        <div class="metric-card">
+                            <div class="metric-value">Admin</div>
+                            <div class="metric-label">User and product governance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">Vendor</div>
+                            <div class="metric-label">Inventory, requests, and delivery flow</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">User</div>
+                            <div class="metric-label">Browse, cart, checkout, and membership perks</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-lg-6">
+                <section class="surface-panel auth-panel h-100">
+                    <div class="mb-4">
+                        <span class="eyebrow">Session sign in</span>
+                        <h2 class="section-title mt-2">Welcome back</h2>
+                        <p class="text-muted mb-0">Use your account to continue where your team left off.</p>
+                    </div>
+                    <form method="post" action="{{ request.url_for('login_submit') }}" class="stack-gap-lg">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div>
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control form-control-lg" id="email" name="email" value="{{ form_values.email }}" required>
+                        </div>
+                        <div>
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-highlight btn-lg w-100">Log In</button>
+                    </form>
+                    <div class="auth-footer mt-4">
+                        <span class="text-muted">Need a new account?</span>
+                        <a href="{{ request.url_for('signup_page') }}" class="link-highlight">Create one here</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

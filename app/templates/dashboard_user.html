@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <span class="eyebrow">Customer workspace</span>
+    <h1 class="hero-title mt-3">Plan purchases and requests without losing the event timeline.</h1>
+    <p class="hero-copy mt-3">
+        Browse approved products, prepare checkout-ready carts, track delivery status, and keep custom requests organized in one place.
+    </p>
+    <div class="d-flex flex-wrap gap-3 mt-4">
+        <a href="{{ request.url_for('products_page') }}" class="btn btn-highlight">Browse products</a>
+        <a href="{{ request.url_for('cart_page') }}" class="btn btn-outline-light">Open cart</a>
+    </div>
+</section>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-label">Cart items</div>
+            <div class="stats-value">{{ cart.items|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-label">Recent orders</div>
+            <div class="stats-value">{{ recent_orders|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-label">Recent requests</div>
+            <div class="stats-value">{{ recent_requests|length }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <section class="surface-panel h-100">
+            <div class="section-header">
+                <h2 class="subsection-title">Membership status</h2>
+                <span class="text-muted small">Delivery perks and tier benefits appear here.</span>
+            </div>
+            {% if active_membership %}
+                <div class="membership-panel">
+                    <div class="badge text-bg-warning text-dark mb-3">{{ active_membership.tier.value|upper }}</div>
+                    <h3 class="mb-2">Active membership</h3>
+                    <p class="text-muted">Status: {{ active_membership.status.value|title }}</p>
+                    <p class="text-muted mb-0">Current membership price: Rs. {{ active_membership.price }}</p>
+                </div>
+            {% else %}
+                <div class="soft-card">
+                    <div class="fw-semibold">No active membership</div>
+                    <p class="small text-muted mb-0">Ask an admin to assign a membership tier for delivery discounts and premium treatment.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="col-xl-8">
+        <section class="surface-panel h-100">
+            <div class="section-header">
+                <h2 class="subsection-title">Active cart snapshot</h2>
+                <span class="text-muted small">Your current ready-to-checkout items.</span>
+            </div>
+            {% if cart.items %}
+                <div class="stack-gap">
+                    {% for item in cart.items %}
+                        <div class="soft-card d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <div class="fw-semibold">{{ item.product.name }}</div>
+                                <div class="small text-muted">Quantity: {{ item.quantity }} • Rs. {{ item.unit_price }} each</div>
+                            </div>
+                            <div class="fw-semibold">Rs. {{ item.line_total }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-4 d-flex justify-content-between align-items-center">
+                    <div class="text-muted">Cart total</div>
+                    <div class="display-6 fw-semibold">Rs. {{ cart.total_amount }}</div>
+                </div>
+            {% else %}
+                <div class="text-muted">Your cart is empty. Start from the product catalog to build an order.</div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="col-xl-6">
+        <section class="surface-panel">
+            <div class="section-header">
+                <h2 class="subsection-title">Recent orders</h2>
+                <span class="text-muted small">Track fulfillment progress from checkout to delivery.</span>
+            </div>
+            <div class="stack-gap">
+                {% for order in recent_orders %}
+                    <a href="{{ request.url_for('success_page', order_id=order.id) }}" class="soft-card soft-card-link text-decoration-none text-reset">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <div class="fw-semibold">{{ order.order_number }}</div>
+                                <div class="small text-muted">{{ order.items|length }} item(s) • Rs. {{ order.total_amount }}</div>
+                            </div>
+                            <span class="badge text-bg-dark text-capitalize">{{ order.status.value.replace('_', ' ') }}</span>
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="text-muted">No orders placed yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-xl-6">
+        <section class="surface-panel">
+            <div class="section-header">
+                <h2 class="subsection-title">Recent requests</h2>
+                <span class="text-muted small">Custom item or vendor requests submitted by you.</span>
+            </div>
+            <div class="stack-gap">
+                {% for item_request in recent_requests %}
+                    <div class="soft-card">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <div class="fw-semibold">{{ item_request.title }}</div>
+                                <div class="small text-muted">{{ item_request.quantity }} requested • {{ item_request.category.name if item_request.category else 'General request' }}</div>
+                            </div>
+                            <span class="badge text-bg-light text-dark text-capitalize">{{ item_request.status.value.replace('_', ' ') }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-muted">No requests submitted yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

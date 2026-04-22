@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="dashboard-header mb-4">
+    <span class="eyebrow">Checkout</span>
+    <h1 class="section-title mt-2">Finalize delivery details and create the order.</h1>
+    <p class="text-muted mb-0">Your order will be created immediately and payment can be simulated from the confirmation page.</p>
+</section>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <section class="surface-panel h-100">
+            <div class="section-header">
+                <h2 class="subsection-title">Delivery and payment</h2>
+                <span class="text-muted small">Simulation-based payment is used for this build.</span>
+            </div>
+            <form method="post" action="{{ request.url_for('checkout_submit') }}" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="col-12">
+                    <label for="delivery_address" class="form-label">Delivery address</label>
+                    <textarea class="form-control" id="delivery_address" name="delivery_address" rows="5" placeholder="Venue address, floor, room number, and contact instructions" required></textarea>
+                </div>
+                <div class="col-12">
+                    <label for="notes" class="form-label">Order notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Optional event timing, setup notes, or delivery instructions"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label for="payment_method" class="form-label">Payment method</label>
+                    <select class="form-select" id="payment_method" name="payment_method">
+                        <option value="simulation">Simulation</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-highlight btn-lg">Create order</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-xl-5">
+        <section class="surface-panel summary-panel h-100">
+            <h2 class="subsection-title">Cart summary</h2>
+            <div class="stack-gap">
+                {% for item in cart.items %}
+                    <div class="soft-card d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-semibold">{{ item.product.name }}</div>
+                            <div class="small text-muted">Qty {{ item.quantity }} • Rs. {{ item.unit_price }}</div>
+                        </div>
+                        <div class="fw-semibold">Rs. {{ item.line_total }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <hr class="my-4">
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>Rs. {{ cart.subtotal_amount }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery note</span>
+                <span class="text-end small text-muted">
+                    {% if active_membership %}
+                        {{ active_membership.tier.value|upper }} membership discount will apply at order creation.
+                    {% else %}
+                        Standard delivery fee applies.
+                    {% endif %}
+                </span>
+            </div>
+            <div class="summary-row">
+                <span>Total before delivery</span>
+                <span class="summary-total">Rs. {{ cart.total_amount }}</span>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

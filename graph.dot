@@ -1,0 +1,57 @@
+digraph ProjectStructure {
+  rankdir=LR;
+  node [shape=box style=filled fillcolor=lightblue];
+  
+  main [label="app/main.py"];
+  
+  subgraph cluster_app {
+    label="app/";
+    api [label="api/"];
+    core [label="core/"];
+    crud [label="crud/"];
+    db [label="db/"];
+    models [label="models/"];
+    schemas [label="schemas/"];
+    services [label="services/"];
+    utils [label="utils/"];
+  }
+  
+  subgraph cluster_api_routes {
+    label="api/routes/";
+    pages [label="pages.py"];
+    admin [label="admin.py"];
+    auth [label="auth.py"];
+    user [label="user.py"];
+    vendor [label="vendor.py"];
+    health [label="health.py"];
+  }
+  
+  main -> api;
+  main -> core;
+  
+  api -> api_routes;
+  
+  pages -> core [label="csrf, deps"];
+  pages -> models;
+  pages -> services;
+  pages -> schemas;
+  pages -> utils;
+  
+  admin -> core;
+  admin -> schemas;
+  admin -> services;
+  
+  auth -> core;
+  auth -> schemas;
+  auth -> services;
+  
+  models -> core;
+  services -> models;
+  services -> crud;
+  services -> core;
+  services -> schemas;
+  
+  core -> models;
+  
+  {rank=same; core db models schemas;}
+}

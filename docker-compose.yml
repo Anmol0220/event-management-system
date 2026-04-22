@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: event-management-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-event_management}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres} -d ${DATABASE_NAME:-event_management}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-management-web
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      APP_NAME: ${APP_NAME:-Event Management System}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      DEBUG: "false"
+      SHOW_DOCS: ${SHOW_DOCS:-false}
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key-before-production-please}
+      CSRF_SECRET_KEY: ${CSRF_SECRET_KEY:-change-this-csrf-secret-before-production-please}
+      ALLOW_OPEN_ADMIN_SIGNUP: ${ALLOW_OPEN_ADMIN_SIGNUP:-false}
+      ADMIN_SIGNUP_CODE: ${ADMIN_SIGNUP_CODE:-}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-ems_session}
+      SESSION_MAX_AGE: ${SESSION_MAX_AGE:-28800}
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-false}
+      SESSION_SAME_SITE: ${SESSION_SAME_SITE:-lax}
+      PRODUCT_IMAGE_MAX_SIZE_BYTES: ${PRODUCT_IMAGE_MAX_SIZE_BYTES:-2097152}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_SQL_QUERIES: ${LOG_SQL_QUERIES:-false}
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-event_management}
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      PORT: 8000
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-1}
+    ports:
+      - "8000:8000"
+    volumes:
+      - product_uploads:/app/app/static/uploads/products
+
+volumes:
+  postgres_data:
+  product_uploads:

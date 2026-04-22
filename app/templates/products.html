@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Products | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="dashboard-header mb-4">
+    <span class="eyebrow">Marketplace</span>
+    <h1 class="section-title mt-2">Browse approved products for your next technical event.</h1>
+    <p class="text-muted mb-0">Use filters to narrow down by category or vendor, then add approved items directly into your active cart.</p>
+</section>
+
+<section class="surface-panel mb-4">
+    <form method="get" action="{{ request.url_for('products_page') }}" class="row g-3 align-items-end">
+        <div class="col-lg-5">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" id="search" name="search" value="{{ selected_search }}" placeholder="Search product names">
+        </div>
+        <div class="col-lg-3">
+            <label for="category_id" class="form-label">Category</label>
+            <select class="form-select" id="category_id" name="category_id">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-3">
+            <label for="vendor_id" class="form-label">Vendor</label>
+            <select class="form-select" id="vendor_id" name="vendor_id">
+                <option value="">All vendors</option>
+                {% for vendor in approved_vendors %}
+                    <option value="{{ vendor.id }}" {% if selected_vendor_id == vendor.id %}selected{% endif %}>{{ vendor.business_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-1 d-grid">
+            <button type="submit" class="btn btn-highlight">Go</button>
+        </div>
+    </form>
+</section>
+
+<div class="row g-4">
+    {% for product in products %}
+        <div class="col-md-6 col-xl-4">
+            <article class="product-card h-100">
+                <div class="product-meta">
+                    <span class="badge text-bg-light text-dark">{{ product.category.name }}</span>
+                    <span class="small text-muted">{{ product.vendor.business_name }}</span>
+                </div>
+                <h2 class="product-title mt-3">{{ product.name }}</h2>
+                <p class="text-muted small mb-2">{{ product.description or 'No product description provided yet.' }}</p>
+                <div class="d-flex justify-content-between align-items-end mt-auto mb-3">
+                    <div>
+                        <div class="small text-muted">Unit price</div>
+                        <div class="price-tag">Rs. {{ product.unit_price }}</div>
+                    </div>
+                    <div class="text-end small text-muted">Inventory: {{ product.inventory_count }}</div>
+                </div>
+                <form method="post" action="{{ request.url_for('product_add_to_cart_submit', product_id=product.id) }}" class="row g-2 align-items-end">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="return_to" value="{{ request.url.path }}">
+                    <div class="col-5">
+                        <label for="quantity-{{ product.id }}" class="form-label small">Qty</label>
+                        <input type="number" class="form-control" id="quantity-{{ product.id }}" name="quantity" min="1" max="{{ product.inventory_count }}" value="1" required>
+                    </div>
+                    <div class="col-7 d-grid">
+                        <button type="submit" class="btn btn-highlight" {% if product.inventory_count <= 0 %}disabled{% endif %}>
+                            {% if product.inventory_count <= 0 %}Out of stock{% else %}Add to cart{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="surface-panel text-center py-5">
+                <h2 class="subsection-title">No products matched your filters.</h2>
+                <p class="text-muted mb-0">Try widening the search criteria or browse another category.</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

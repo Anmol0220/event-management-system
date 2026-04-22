@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Order Success | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="hero-panel mb-4">
+    <span class="eyebrow">Order created</span>
+    <h1 class="hero-title mt-3">{{ order.order_number }}</h1>
+    <p class="hero-copy mt-3">Your order has been placed and is currently marked as <strong>{{ order.status.value.replace('_', ' ') }}</strong>. Simulate payment below to continue fulfillment.</p>
+    <div class="d-flex flex-wrap gap-3 mt-4">
+        <a href="{{ request.url_for('products_page') }}" class="btn btn-highlight">Back to products</a>
+        <a href="{{ request.url_for('user_dashboard_page') }}" class="btn btn-outline-light">Return to dashboard</a>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <section class="surface-panel">
+            <div class="section-header">
+                <h2 class="subsection-title">Order summary</h2>
+                <span class="text-muted small">Delivery address and item snapshot taken at checkout time.</span>
+            </div>
+            <div class="soft-card mb-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="small text-muted">Status</div>
+                        <div class="fw-semibold text-capitalize">{{ order.status.value.replace('_', ' ') }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="small text-muted">Total</div>
+                        <div class="fw-semibold">Rs. {{ order.total_amount }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="small text-muted">Delivery address</div>
+                        <div>{{ order.delivery_address }}</div>
+                    </div>
+                    {% if order.notes %}
+                        <div class="col-12">
+                            <div class="small text-muted">Notes</div>
+                            <div>{{ order.notes }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-theme align-middle">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Vendor</th>
+                            <th>Quantity</th>
+                            <th>Unit price</th>
+                            <th>Line total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ item.product_name }}</div>
+                                    <div class="small text-muted">{{ item.product_sku or 'No SKU' }}</div>
+                                </td>
+                                <td>{{ item.vendor_business_name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>Rs. {{ item.unit_price }}</td>
+                                <td class="fw-semibold">Rs. {{ item.line_total }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-xl-5">
+        <section class="surface-panel h-100">
+            <div class="section-header">
+                <h2 class="subsection-title">Payment simulation</h2>
+                <span class="text-muted small">A lightweight stand-in for a production payment provider.</span>
+            </div>
+
+            {% if order.payment %}
+                <div class="soft-card mb-4">
+                    <div class="summary-row">
+                        <span>Method</span>
+                        <span class="text-capitalize">{{ order.payment.payment_method }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Status</span>
+                        <span class="badge {% if order.payment.status.value == 'paid' %}text-bg-success{% elif order.payment.status.value == 'failed' %}text-bg-danger{% else %}text-bg-warning{% endif %}">
+                            {{ order.payment.status.value|title }}
+                        </span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Amount</span>
+                        <span>Rs. {{ order.payment.amount }}</span>
+                    </div>
+                    {% if order.payment.provider_response %}
+                        <div class="small text-muted mt-3">{{ order.payment.provider_response }}</div>
+                    {% endif %}
+                </div>
+
+                {% if order.payment.status.value != 'paid' %}
+                    <form method="post" action="{{ request.url_for('success_payment_submit', order_id=order.id) }}" class="row g-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="succeed" value="true">
+                        <div class="col-12">
+                            <label for="provider_message" class="form-label">Simulation note</label>
+                            <input type="text" class="form-control" id="provider_message" name="provider_message" placeholder="Optional processor response message">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-highlight w-100">Simulate successful payment</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="membership-panel">
+                        <h3 class="mb-2">Payment confirmed</h3>
+                        <p class="text-muted mb-0">Your order can now move through ready, out for delivery, and delivered stages from the vendor/admin dashboard.</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="text-muted">This order does not have a payment record.</div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

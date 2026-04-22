@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Cart | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="dashboard-header mb-4">
+    <span class="eyebrow">Cart</span>
+    <h1 class="section-title mt-2">Review your active event order.</h1>
+    <p class="text-muted mb-0">Adjust quantities, remove items, and continue to checkout when your list is ready.</p>
+</section>
+
+{% if cart.items %}
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <section class="surface-panel">
+                <div class="table-responsive">
+                    <table class="table table-theme align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Line total</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ item.product.name }}</div>
+                                        <div class="small text-muted">{{ item.product.sku }}</div>
+                                    </td>
+                                    <td>Rs. {{ item.unit_price }}</td>
+                                    <td class="cart-quantity-cell">
+                                        <form method="post" action="{{ request.url_for('cart_item_update_submit', cart_item_id=item.id) }}" class="d-flex gap-2">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="number" class="form-control form-control-sm" name="quantity" min="1" max="{{ item.product.inventory_count }}" value="{{ item.quantity }}" required>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                        </form>
+                                    </td>
+                                    <td class="fw-semibold">Rs. {{ item.line_total }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{{ request.url_for('cart_item_remove_submit', cart_item_id=item.id) }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <div class="col-xl-4">
+            <section class="surface-panel summary-panel">
+                <h2 class="subsection-title">Order summary</h2>
+                <div class="summary-row">
+                    <span>Items</span>
+                    <span>{{ cart.items|length }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>Rs. {{ cart.subtotal_amount }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Total</span>
+                    <span class="summary-total">Rs. {{ cart.total_amount }}</span>
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{{ request.url_for('checkout_page') }}" class="btn btn-highlight btn-lg">Proceed to checkout</a>
+                    <a href="{{ request.url_for('products_page') }}" class="btn btn-outline-secondary">Continue shopping</a>
+                </div>
+            </section>
+        </div>
+    </div>
+{% else %}
+    <section class="surface-panel text-center py-5">
+        <h2 class="subsection-title">Your cart is empty.</h2>
+        <p class="text-muted mb-4">Browse approved products and add the items you need for your event setup.</p>
+        <a href="{{ request.url_for('products_page') }}" class="btn btn-highlight">Explore products</a>
+    </section>
+{% endif %}
+{% endblock %}
